@@ -6615,7 +6615,7 @@ func importWithSrcDir(path string, srcDir string, mode build.ImportMode, install
 // to generate the named output file.
 func (gopherjsToolchain) asm(b *builder, p *Package, obj, ofile, sfile string) error {
 
-	return fmt.Errorf("GopherJS does not support the assembler")
+	return nil
 }
 
 // pkgpath builds an appropriate path for a temporary package file.
@@ -6630,7 +6630,7 @@ func (gopherjsToolchain) pkgpath(basedir string, p *Package) string {
 // typically it is run in the object directory.
 func (gopherjsToolchain) pack(b *builder, p *Package, objDir, afile string, ofiles []string) error {
 
-	return fmt.Errorf("GopherJS does not support the archive packer")
+	return nil
 }
 
 // cc runs the toolchain's C compiler in a directory on a C file

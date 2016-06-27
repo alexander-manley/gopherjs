@@ -6615,7 +6615,7 @@ func cmdgo_importWithSrcDir(path string, srcDir string, mode build.ImportMode, i
 // to generate the named output file.
 func (cmdgo_gopherjsToolchain) asm(b *cmdgo_builder, p *cmdgo_Package, obj, ofile, sfile string) error {
 
-	return fmt.Errorf("GopherJS does not support the assembler")
+	return nil
 }
 
 // pkgpath builds an appropriate path for a temporary package file.
@@ -6630,7 +6630,7 @@ func (cmdgo_gopherjsToolchain) pkgpath(basedir string, p *cmdgo_Package) string 
 // typically it is run in the object directory.
 func (cmdgo_gopherjsToolchain) pack(b *cmdgo_builder, p *cmdgo_Package, objDir, afile string, ofiles []string) error {
 
-	return fmt.Errorf("GopherJS does not support the archive packer")
+	return nil
 }
 
 // cc runs the toolchain's C compiler in a directory on a C file
