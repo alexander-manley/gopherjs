@@ -3,12 +3,12 @@
 package natives
 
 import (
-	"go/build"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 
+	"github.com/gopherjs/gopherjs/go/build"
 	"github.com/shurcooL/httpfs/filter"
 )
 
