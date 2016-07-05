@@ -6368,15 +6368,8 @@ func (gopherjsToolchain) gc(b *builder, p *Package, archive, obj string, asmhdr 
 					return archive, err
 				}
 
-				objFile, err := os.Open("/usr/local/go/pkg/gopherjs_darwin_js/" + path + ".a")
-				if os.IsNotExist(err) {
+				objFile, err := os.Open("/TODO/notfound")
 
-					objFile, err = os.Open("/Users/Dmitri/Dropbox/Work/2013/GoLand/pkg/darwin_js_min/" + path + ".a")
-				}
-				if os.IsNotExist(err) {
-
-					objFile, err = os.Open(obj + path + ".a")
-				}
 				if os.IsNotExist(err) {
 
 					objFile, err = os.Open(importArgs[1] + "/" + path + ".a")
@@ -6386,6 +6379,9 @@ func (gopherjsToolchain) gc(b *builder, p *Package, archive, obj string, asmhdr 
 
 						objFile, err = os.Open(importArgs[3] + "/" + path + ".a")
 					}
+				}
+				if os.IsNotExist(err) {
+					objFile, err = os.Open("/usr/local/go/pkg/gopherjs_darwin_js/" + path + ".a")
 				}
 				if os.IsNotExist(err) {
 
@@ -6440,18 +6436,24 @@ func (gopherjsToolchain) gc(b *builder, p *Package, archive, obj string, asmhdr 
 				return archive, err
 			}
 
-			objFile, err := os.Open("/usr/local/go/pkg/gopherjs_darwin_js/" + path + ".a")
-			if os.IsNotExist(err) {
+			objFile, err := os.Open("/TODO/notfound")
 
-				objFile, err = os.Open("/Users/Dmitri/Dropbox/Work/2013/GoLand/pkg/darwin_js_min/" + path + ".a")
-			}
 			if os.IsNotExist(err) {
 
 				objFile, err = os.Open(importArgs[1] + "/" + path + ".a")
 			}
+			if len(importArgs) >= 4 {
+				if os.IsNotExist(err) {
+
+					objFile, err = os.Open(importArgs[3] + "/" + path + ".a")
+				}
+			}
 			if os.IsNotExist(err) {
 
 				objFile, err = os.Open("/Users/Dmitri/Dropbox/Work/2013/GoLand/pkg/gopherjs_darwin_js/" + path + ".a")
+			}
+			if os.IsNotExist(err) {
+				objFile, err = os.Open("/usr/local/go/pkg/gopherjs_darwin_js/" + path + ".a")
 			}
 			if err != nil {
 				return nil, fmt.Errorf("importFromDisk: archive for path %q missing: %v", path, err)
@@ -6474,7 +6476,7 @@ func (gopherjsToolchain) gc(b *builder, p *Package, archive, obj string, asmhdr 
 			}
 		}
 
-		archive, err := BuildPackage(pkg, s, importFromDisk)
+		archive, err := BuildPackage(pkg, s, options, importFromDisk)
 		if err != nil {
 			return "", nil, fmt.Errorf("BuildPackage: %v", err)
 		}
@@ -6523,7 +6525,7 @@ func (gopherjsToolchain) ldShared(b *builder, toplevelactions []*action, out str
 	return fmt.Errorf("GopherJS has not implemented support for shared libraries")
 }
 
-func BuildPackage(pkg *gopherjsbuild.PackageData, s *gopherjsbuild.Session, importLoader func(path string) (*compiler.Archive, error)) (*compiler.Archive, error) {
+func BuildPackage(pkg *gopherjsbuild.PackageData, s *gopherjsbuild.Session, options *gopherjsbuild.Options, importLoader func(path string) (*compiler.Archive, error)) (*compiler.Archive, error) {
 	fileSet := token.NewFileSet()
 	files, err := gopherjsbuild.Parse(pkg.Package, pkg.IsTest, fileSet)
 	if err != nil {
@@ -6534,7 +6536,7 @@ func BuildPackage(pkg *gopherjsbuild.PackageData, s *gopherjsbuild.Session, impo
 		Packages: s.Types,
 		Import:   importLoader,
 	}
-	archive, err := compiler.Compile(pkg.ImportPath, files, fileSet, importContext, true)
+	archive, err := compiler.Compile(pkg.ImportPath, files, fileSet, importContext, options.Minify)
 	if err != nil {
 		return nil, fmt.Errorf("compiler.Compile (in BuildPackage): %v", err)
 	}
@@ -6584,9 +6586,23 @@ func importWithSrcDir(path string, srcDir string, mode build.ImportMode, install
 			buildContext.InstallSuffix += "_" + installSuffix
 		}
 	}
+
+	// TODO, HACK: Import path can't have _text suffix or else buildContext.Import won't
+	//             actually find it. So strip it here and re-attach to pkg.ImportPath after.
+	//             There's gotta be a better way this should be done.
+	var xTest bool
+	if strings.HasSuffix(path, "_test") {
+		path = path[:len(path)-5]
+		xTest = true
+	}
+
 	pkg, err := buildContext.Import(path, srcDir, mode)
 	if err != nil {
 		return nil, err
+	}
+
+	if xTest {
+		pkg.ImportPath += "_test"
 	}
 
 	switch path {
