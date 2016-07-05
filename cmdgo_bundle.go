@@ -1590,6 +1590,7 @@ import (
 
 	gopherjsbuild "github.com/gopherjs/gopherjs/build"
 	"github.com/gopherjs/gopherjs/compiler"
+	"github.com/gopherjs/gopherjs/compiler/natives"
 	"github.com/gopherjs/gopherjs/go/build"
 	"github.com/gopherjs/gopherjs/internal/singleflight"
 	"github.com/kardianos/osext"
@@ -6367,8 +6368,15 @@ func (cmdgo_gopherjsToolchain) gc(b *cmdgo_builder, p *cmdgo_Package, archive, o
 
 					return archive, err
 				}
+				// TODO: Get rid of hardcoded paths.
+				var (
+					objFile io.ReadCloser
+					err     = os.ErrNotExist
+				)
+				if os.IsNotExist(err) && (path == "github.com/gopherjs/gopherjs/js" || path == "github.com/gopherjs/gopherjs/nosync") {
 
-				objFile, err := os.Open("/TODO/notfound")
+					objFile, err = natives.FS.Open("/pkg/" + filepath.Base(path) + ".a")
+				}
 
 				if os.IsNotExist(err) {
 
@@ -6435,9 +6443,15 @@ func (cmdgo_gopherjsToolchain) gc(b *cmdgo_builder, p *cmdgo_Package, archive, o
 			if archive, ok := s.Archives[path]; ok {
 				return archive, err
 			}
+			// TODO: Get rid of hardcoded paths.
+			var (
+				objFile io.ReadCloser
+				err     = os.ErrNotExist
+			)
+			if os.IsNotExist(err) && (path == "github.com/gopherjs/gopherjs/js" || path == "github.com/gopherjs/gopherjs/nosync") {
 
-			objFile, err := os.Open("/TODO/notfound")
-
+				objFile, err = natives.FS.Open("/pkg/" + filepath.Base(path) + ".a")
+			}
 			if os.IsNotExist(err) {
 
 				objFile, err = os.Open(importArgs[1] + "/" + path + ".a")
